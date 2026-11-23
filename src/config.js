@@ -12,18 +12,6 @@ export const MEMBERS = [
 export const memberById = (id) => MEMBERS.find((m) => m.id === id)
 export const memberName = (id) => memberById(id)?.name ?? 'Unknown'
 
-export const EXPENSE_CATEGORIES = [
-  'Rehearsal room',
-  'Gear',
-  'Transport',
-  'Recording',
-  'Promotion',
-  'Food & drinks',
-  'Other',
-]
-
 export const SONG_KEYS = [
   'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B',
 ].flatMap((k) => [k, k + 'm'])
-
-export const CURRENCY = 'RON'

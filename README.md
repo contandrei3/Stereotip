@@ -4,8 +4,7 @@ Private, members-only web app for **Stereo.tip** (Andrei, Mario, Mihai, David, A
 It has a dark theme, works well on phones, and all data is shared live through Firebase.
 
 **Sections:** Home summary · Calendar (rehearsals & gigs + availability) · Songs & setlists
-(drag & drop, auto total time) · Tasks · Money (equal split, who owes whom, monthly/category
-totals) · Reminders · Journal (posts, photos, comments, filter by song).
+(drag & drop, auto total time) · Tasks · Reminders · Journal (posts, photos, comments, filter by song).
 
 ## Run locally
 
@@ -39,8 +38,6 @@ behave like an app.
 
 ### Notes
 - Photos are resized in the browser and stored in Firestore (no Cloud Storage or paid plan needed).
-- Expenses are always split equally between the 5 members. "Mark paid" records a repayment
-  and updates the balances.
 
 ## Logo & colours
 The band logo is `public/logo.png` (white, transparent background); the app icons (`favicon.png`, `apple-touch-icon.png`, `icon-*.png`) are generated from it. It's used in the header, login screen

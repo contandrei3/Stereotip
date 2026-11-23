@@ -8,7 +8,6 @@ import Home from './pages/Home'
 import Calendar from './pages/Calendar'
 import Songs from './pages/Songs'
 import Tasks from './pages/Tasks'
-import Money from './pages/Money'
 import Reminders from './pages/Reminders'
 import Journal from './pages/Journal'
 
@@ -17,7 +16,6 @@ const NAV = [
   { to: '/calendar', label: 'Calendar', icon: 'calendar' },
   { to: '/songs', label: 'Songs', icon: 'music' },
   { to: '/tasks', label: 'Tasks', icon: 'tasks' },
-  { to: '/money', label: 'Money', icon: 'money' },
   { to: '/reminders', label: 'Reminders', icon: 'bell' },
   { to: '/journal', label: 'Journal', icon: 'journal' },
 ]
@@ -60,7 +58,6 @@ function Shell() {
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/songs" element={<Songs />} />
           <Route path="/tasks" element={<Tasks />} />
-          <Route path="/money" element={<Money />} />
           <Route path="/reminders" element={<Reminders />} />
           <Route path="/journal" element={<Journal />} />
           <Route path="*" element={<Navigate to="/" />} />

@@ -9,8 +9,6 @@ import { today, addDays, byDate, fmtDate, relDays } from '../lib/dates'
 import { TaskRow, TaskForm } from './Tasks'
 import { ReminderRow, remindersFor } from './Reminders'
 import { Post } from './Journal'
-import { computeBalances } from '../lib/money'
-import { fmtMoney } from '../lib/money'
 import { AbsenceRow, overlaps } from '../components/absences'
 
 function greeting() {
@@ -24,8 +22,6 @@ export default function Home() {
   const { rows: reminders } = useCollection('reminders')
   const { rows: tasks } = useCollection('tasks')
   const { rows: posts } = useCollection('posts')
-  const { rows: expenses } = useCollection('expenses')
-  const { rows: transfers } = useCollection('transfers')
   const { rows: absences } = useCollection('absences')
   const [open, setOpen] = useState(null)
   const [taskForm, setTaskForm] = useState(null)
@@ -44,7 +40,6 @@ export default function Home() {
   const otherOpen = openTasks.length - myTasks.length
   const weekAway = absences.filter((a) => overlaps(a, t, in7)).sort((a, b) => a.from.localeCompare(b.from))
   const latestPosts = [...posts].sort((a, b) => b.createdAt - a.createdAt).slice(0, 3)
-  const myBalance = computeBalances(expenses, transfers)[memberId] ?? 0
   const needsAnswer = upcoming.filter((e) => !e.availability?.[memberId]).length
 
   return (
@@ -53,7 +48,6 @@ export default function Home() {
         <h1>{greeting()}, {me.name}.</h1>
         <p className="muted">
           {needsAnswer > 0 ? <><strong className="accent">{needsAnswer}</strong> event{needsAnswer > 1 ? 's' : ''} waiting for your answer. </> : 'You\'re all set. '}
-          {Math.abs(myBalance) >= 0.01 && <Link to="/money" className="muted">{myBalance > 0 ? `The band owes you ${fmtMoney(myBalance)}.` : `You owe ${fmtMoney(-myBalance)}.`}</Link>}
         </p>
       </div>
       <ErrorNote error={error} />

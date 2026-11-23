@@ -24,6 +24,7 @@ const P = {
   list: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
   play: 'M7 4l13 8-13 8z',
   user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
+  away: 'M3 21h18M5 21V8l7-5 7 5v13M10 21v-5h4v5M4 4l16 16',
   arrowR: 'M5 12h14M13 6l6 6-6 6',
 }
 export default function Icon({ name, size = 20, className = '', stroke = 2 }) {

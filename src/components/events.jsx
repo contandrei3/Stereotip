@@ -6,29 +6,44 @@ import { useCollection } from '../data/hooks'
 import { fmtDate, relDays, today, fmtDuration } from '../lib/dates'
 import { Modal, Field, Avatar, Segmented, confirmDelete } from './ui'
 import Icon from './Icon'
+import { awayOn, AwayNote, fmtRange } from './absences'
 
 export const TYPE_LABEL = { rehearsal: 'Rehearsal', gig: 'Gig' }
+// A member's status for an event: their own answer wins; otherwise "away" if they marked an away period.
+export function memberStatus(event, memberId, absences) {
+  const a = event.availability?.[memberId]
+  if (a) return a
+  return awayOn(absences, event.date).some((x) => x.member === memberId) ? 'away' : null
+}
+const STATUS_TEXT = { yes: 'Can make it', no: "Can't make it", away: 'Away', null: 'No answer' }
+
 export const eventTitle = (e) => e.title?.trim() || TYPE_LABEL[e.type] || 'Event'
 
 export function AvailabilitySummary({ event }) {
-  const a = event.availability || {}
+  const { rows: absences } = useCollection('absences')
   return (
     <div className="avail-row">
-      {MEMBERS.map((m) => (
-        <span key={m.id} className={`avail-dot ${a[m.id] || 'unknown'}`} title={`${m.name}: ${a[m.id] === 'yes' ? 'can make it' : a[m.id] === 'no' ? "can't make it" : 'no answer yet'}`}>
-          <Avatar id={m.id} size={24} />
-        </span>
-      ))}
+      {MEMBERS.map((m) => {
+        const st = memberStatus(event, m.id, absences)
+        return (
+          <span key={m.id} className={`avail-dot ${st || 'unknown'}`} title={`${m.name}: ${STATUS_TEXT[st]}`}>
+            <Avatar id={m.id} size={24} />
+          </span>
+        )
+      })}
     </div>
   )
 }
 
 export function MyAvailability({ event }) {
   const { memberId } = useAuth()
+  const { rows: absences } = useCollection('absences')
   const mine = event.availability?.[memberId]
+  const myAway = !mine && awayOn(absences, event.date).find((a) => a.member === memberId)
   const set = (v) => updateItem('events', event.id, { [`availability.${memberId}`]: mine === v ? null : v })
   return (
     <div className="my-avail">
+      {myAway && <span className="muted small away-hint" title={myAway.reason}>You're marked away</span>}
       <button className={`chip yes ${mine === 'yes' ? 'on' : ''}`} onClick={(e) => { e.stopPropagation(); set('yes') }}>
         <Icon name="check" size={16} /> I'm in
       </button>
@@ -64,6 +79,7 @@ export function EventCard({ event, onOpen, compact }) {
 }
 
 export function EventForm({ initial, onClose }) {
+  const { rows: absences } = useCollection('absences')
   const [f, setF] = useState({
     type: 'rehearsal', title: '', date: today(), time: '19:00', location: '', notes: '', ...initial,
   })
@@ -84,6 +100,7 @@ export function EventForm({ initial, onClose }) {
           <Field label="Date"><input type="date" value={f.date} onChange={set('date')} required /></Field>
           <Field label="Time"><input type="time" value={f.time} onChange={set('time')} /></Field>
         </div>
+        <AwayNote absences={absences} date={f.date} />
         <Field label="Location"><input value={f.location} onChange={set('location')} placeholder="Rehearsal room, club, address…" /></Field>
         <Field label="Notes"><textarea rows={3} value={f.notes} onChange={set('notes')} placeholder="Bring the cables, soundcheck at 18:00…" /></Field>
         <button className="btn primary block">{f.id ? 'Save changes' : 'Add event'}</button>
@@ -97,6 +114,7 @@ export function EventDetail({ event: ev, onClose }) {
   const { rows: setlists } = useCollection('setlists')
   const { rows: songs } = useCollection('songs')
   const { rows: events } = useCollection('events')
+  const { rows: absences } = useCollection('absences')
   const event = events.find((e) => e.id === ev.id) ?? ev
   if (editing) return <EventForm initial={event} onClose={() => setEditing(false)} />
   const linked = setlists.filter((s) => s.eventId === event.id)
@@ -118,11 +136,14 @@ export function EventDetail({ event: ev, onClose }) {
         <MyAvailability event={event} />
         <ul className="avail-list">
           {MEMBERS.map((m) => {
-            const a = event.availability?.[m.id]
+            const st = memberStatus(event, m.id, absences)
+            const away = st === 'away' && awayOn(absences, event.date).find((x) => x.member === m.id)
             return (
               <li key={m.id}>
                 <Avatar id={m.id} size={26} /> <span>{m.name}</span> <span className="muted small">{m.role}</span>
-                <span className={`status-text ${a || 'unknown'}`}>{a === 'yes' ? 'Can make it' : a === 'no' ? "Can't make it" : 'No answer'}</span>
+                <span className={`status-text ${st || 'unknown'}`}>
+                  {STATUS_TEXT[st]}{away && <span className="muted small"> · {fmtRange(away)}{away.reason ? `, ${away.reason}` : ''}</span>}
+                </span>
               </li>
             )
           })}

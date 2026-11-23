@@ -274,7 +274,7 @@ details.past .stack, details.past .task-list { opacity: .75; }
 .cal-wd { text-align: center; font-size: 11px; font-weight: 700; color: var(--faint); text-transform: uppercase; padding: 4px 0; }
 .cal-wd span { display: none; }
 .cal-day {
-  aspect-ratio: 1 / 1.05; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  min-height: 58px; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px;
   padding: 5px 2px; background: var(--surface-2); border: 1px solid transparent; border-radius: 10px; overflow: hidden;
 }
 .cal-day .num { font-size: 13.5px; font-weight: 600; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; }
@@ -435,3 +435,23 @@ details.past .stack, details.past .task-list { opacity: .75; }
 @keyframes rise { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes pulse { 0%, 100% { opacity: .3; transform: scale(.8); } 50% { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ── Away periods ── */
+.status-text.away, .tag.away { color: var(--warn); }
+.tag.away { background: rgba(255, 182, 72, .14); }
+.avail-dot.away .avatar { opacity: .45; filter: grayscale(1); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--warn); }
+.away-hint { align-self: center; color: var(--warn); }
+.away-note { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius-sm); background: rgba(255, 182, 72, .08); border: 1px solid rgba(255, 182, 72, .25); color: var(--text); font-size: 14px; margin-bottom: 10px; }
+.away-note .icon { color: var(--warn); margin-top: 1px; }
+.away-btn { margin-left: auto; }
+.away-section { margin-top: 22px; }
+.absence { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+.task-list:not(.card .task-list) > li.absence { padding: 12px 14px; }
+.quick-range { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -4px; }
+.cal-day { position: relative; }
+.cal-day.has-away { background-image: repeating-linear-gradient(135deg, transparent 0 6px, rgba(255, 182, 72, .06) 6px 8px); }
+.cal-away { display: flex; justify-content: center; gap: 1px; margin-top: auto; }
+.cal-away i, .legend-away { display: inline-grid; place-items: center; width: 13px; height: 13px; border-radius: 50%; font-size: 8.5px; font-weight: 800; font-style: normal; color: #0b0b0d; opacity: .9; }
+.cal-away i.more { background: var(--surface-3); color: var(--muted); width: auto; padding: 0 3px; border-radius: 6px; }
+.legend-away { background: var(--warn); }
+@media (min-width: 700px) { .cal-away { justify-content: flex-start; } .cal-away i { width: 16px; height: 16px; font-size: 9.5px; } }

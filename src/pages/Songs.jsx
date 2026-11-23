@@ -56,42 +56,55 @@ function Repertoire({ onEdit }) {
       </div>
       {list.length === 0
         ? <Empty icon="music" action={!songs.length && <AddButton label="Song" onClick={() => onEdit({})} />}>{songs.length ? 'No songs match.' : 'No songs yet. Add your repertoire.'}</Empty>
-        : <div className="song-list">
-          {list.map((s) => (
-            <article key={s.id} className={`card song ${openId === s.id ? 'open' : ''}`}>
-              <button className="song-row" onClick={() => setOpenId(openId === s.id ? null : s.id)}>
-                <span className={`status-dot ${s.status}`} title={STATUS[s.status]} />
-                <span className="song-title">{s.title}</span>
-                <span className="song-meta">
-                  {s.key && <span className="kbd">{s.key}</span>}
-                  {s.bpm && <span className="kbd">{s.bpm} bpm</span>}
-                  <span className="muted small">{fmtDuration(s.duration)}</span>
-                </span>
-              </button>
-              {openId === s.id && (
-                <div className="song-detail">
-                  <p><span className={`tag ${s.status}`}>{STATUS[s.status]}</span></p>
-                  {s.notes && <p className="notes">{s.notes}</p>}
-                  <SongRehearsals songId={s.id} />
-                  {(s.links || []).length > 0 && (
-                    <div className="links">
-                      {s.links.map((l, i) => (
-                        <a key={i} href={l} target="_blank" rel="noreferrer" className="link-chip">
-                          <Icon name={l.includes('youtu') ? 'play' : 'link'} size={14} /> {linkLabel(l)}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                  <div className="row-actions">
-                    <button className="btn small ghost danger" onClick={() => confirmDelete(`"${s.title}"`) && removeItem('songs', s.id)}><Icon name="trash" size={16} /> Delete</button>
-                    <button className="btn small" onClick={() => onEdit(s)}><Icon name="edit" size={16} /> Edit</button>
-                  </div>
-                </div>
-              )}
-            </article>
-          ))}
-        </div>}
+        : STATUS_OPTIONS.map(([st, label]) => {
+          const group = list.filter((s) => (s.status || 'progress') === st)
+          if (!group.length) return null
+          return (
+            <section key={st} className={`song-group ${st}`}>
+              <h2 className="group-title"><span className={`status-dot ${st}`} /> {label} <span className="count">{group.length}</span></h2>
+              <div className="song-list">
+                {group.map((s) => <SongItem key={s.id} s={s} open={openId === s.id} onToggle={() => setOpenId(openId === s.id ? null : s.id)} onEdit={onEdit} />)}
+              </div>
+            </section>
+          )
+        })}
     </>
+  )
+}
+
+function SongItem({ s, open, onToggle, onEdit }) {
+  return (
+    <article key={s.id} className={`card song ${open ? 'open' : ''}`}>
+      <button className="song-row" onClick={onToggle}>
+        <span className={`status-dot ${s.status}`} title={STATUS[s.status]} />
+        <span className="song-title">{s.title}</span>
+        <span className="song-meta">
+          {s.key && <span className="kbd">{s.key}</span>}
+          {s.bpm && <span className="kbd">{s.bpm} bpm</span>}
+          <span className="muted small">{fmtDuration(s.duration)}</span>
+        </span>
+      </button>
+      {open && (
+        <div className="song-detail">
+          <p><span className={`tag ${s.status}`}>{STATUS[s.status]}</span></p>
+          {s.notes && <p className="notes">{s.notes}</p>}
+          <SongRehearsals songId={s.id} />
+          {(s.links || []).length > 0 && (
+            <div className="links">
+              {s.links.map((l, i) => (
+                <a key={i} href={l} target="_blank" rel="noreferrer" className="link-chip">
+                  <Icon name={l.includes('youtu') ? 'play' : 'link'} size={14} /> {linkLabel(l)}
+                </a>
+              ))}
+            </div>
+          )}
+          <div className="row-actions">
+            <button className="btn small ghost danger" onClick={() => confirmDelete(`"${s.title}"`) && removeItem('songs', s.id)}><Icon name="trash" size={16} /> Delete</button>
+            <button className="btn small" onClick={() => onEdit(s)}><Icon name="edit" size={16} /> Edit</button>
+          </div>
+        </div>
+      )}
+    </article>
   )
 }
 

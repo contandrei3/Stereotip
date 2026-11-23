@@ -480,3 +480,8 @@ details.past .stack, details.past .task-list { opacity: .75; }
 .obs-form { display: flex; flex-direction: column; gap: 6px; }
 .obs-form-row { display: flex; gap: 6px; }
 .obs-form-row select { min-height: 38px; padding: 6px 10px; }
+
+/* ── Song groups ── */
+.song-group { margin-bottom: 22px; }
+.song-group .group-title { gap: 10px; }
+.song-group.future .card.song { background: transparent; border-style: dashed; }

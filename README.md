@@ -47,6 +47,6 @@ behave like an app.
   and updates the balances.
 
 ## Logo & colours
-Put the band logo at `public/logo.png` (transparent PNG). It's used in the header, login screen
+The band logo is `public/logo.png` (white, transparent background); the app icons (`favicon.png`, `apple-touch-icon.png`, `icon-*.png`) are generated from it. It's used in the header, login screen
 and as the icon. The theme is monochrome to match the white logo. If you ever use a coloured
 logo, the accent colours are taken from it automatically (`src/lib/theme.js`).

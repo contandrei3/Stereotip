@@ -2,7 +2,7 @@
 // always matches the logo. Falls back to the defaults in styles.css when the
 // logo is monochrome (e.g. white-on-transparent) or can't be read.
 export const LOGO_SRC = './logo.png'
-export const LOGO_FALLBACK = './logo.svg'
+export const LOGO_FALLBACK = './icon-192.png'
 
 function rgbToHsl(r, g, b) {
   r /= 255; g /= 255; b /= 255

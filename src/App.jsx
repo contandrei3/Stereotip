@@ -40,7 +40,7 @@ function Shell() {
   return (
     <div className="shell">
       <header className="topbar">
-        <NavLink to="/" className="brand"><Logo size={34} /><span className="brand-name">{BAND_NAME}</span></NavLink>
+        <NavLink to="/" className="brand"><Logo size={40} /><span className="brand-name">{BAND_NAME}</span></NavLink>
         <nav className="side-nav">
           {NAV.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end}><Icon name={n.icon} /> <span>{n.label}</span></NavLink>
@@ -118,7 +118,7 @@ function Login() {
   return (
     <div className="auth-screen">
       <form className="auth-card" onSubmit={submit}>
-        <Logo size={88} />
+        <Logo size={150} />
         <h1>{BAND_NAME} <span className="muted">Band Hub</span></h1>
         <p className="muted">Members only. Sign in with your band account.</p>
         <input type="email" autoComplete="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -137,7 +137,7 @@ function MemberPicker({ demoIntro }) {
   return (
     <div className="auth-screen">
       <div className="auth-card">
-        <Logo size={88} />
+        <Logo size={150} />
         <h1>Who are you?</h1>
         {demoIntro
           ? <p className="muted">Demo mode: Firebase isn't connected yet, so data stays in this browser only.</p>

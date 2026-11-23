@@ -21,7 +21,7 @@
   --radius-sm: 10px;
   --tabbar-h: 64px;
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --display: 'Space Grotesk', var(--font);
+  --display: 'Oswald', 'Arial Narrow', var(--font);
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -32,7 +32,8 @@ body {
   overflow-x: hidden;
 }
 body.no-scroll { overflow: hidden; }
-h1, h2, h3, h4 { font-family: var(--display); margin: 0; letter-spacing: -0.01em; }
+h1, h2, h3, h4 { font-family: var(--display); font-weight: 600; margin: 0; letter-spacing: .01em; }
+h1 { text-transform: uppercase; font-weight: 700; letter-spacing: .02em; }
 h1 { font-size: 26px; }
 h2 { font-size: 17px; }
 h3 { font-size: 16px; }
@@ -97,7 +98,7 @@ input[type='date'], input[type='time'] { min-width: 0; }
 }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
 .logo { display: block; width: auto; object-fit: contain; }
-.brand-name { font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: -.01em; }
+.brand-name { font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: .06em; text-transform: uppercase; }
 .side-nav { display: none; }
 .me { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 .me-name { display: none; font-weight: 600; }
@@ -226,7 +227,7 @@ details.past .stack, details.past .task-list { opacity: .75; }
 .auth-screen { min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; background: radial-gradient(circle at 50% 0%, #1d1d22 0%, var(--bg) 60%); }
 .auth-card { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
 .auth-card .logo { margin-bottom: 6px; }
-.auth-card h1 { font-size: 24px; }
+.auth-card h1 { font-size: 26px; }
 .member-grid { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0; }
 .member-pick { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .member-pick:hover { border-color: var(--accent); }
@@ -420,7 +421,7 @@ details.past .stack, details.past .task-list { opacity: .75; }
 
 /* ── Home ── */
 .hello { margin-bottom: 20px; }
-.hello h1 { font-size: 28px; }
+.hello h1 { font-size: 30px; line-height: 1.1; }
 .hello p { margin-top: 4px; }
 .home-grid { display: grid; gap: 22px; }
 @media (min-width: 1000px) { .home-grid { grid-template-columns: 1fr 1fr; gap: 26px 28px; } }

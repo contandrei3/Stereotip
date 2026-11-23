@@ -15,6 +15,7 @@ import Icon from '../components/Icon'
 import { SONG_KEYS, SONG_STATUS, SONG_STATUS_OPTIONS } from '../config'
 import { fmtDuration, parseDuration, fmtDate, today, byDate } from '../lib/dates'
 import { eventTitle, TYPE_LABEL } from '../components/events'
+import SetlistWizard from './SetlistWizard'
 
 const STATUS = SONG_STATUS, STATUS_OPTIONS = SONG_STATUS_OPTIONS
 const STATUS_RANK = { ready: 0, progress: 1, future: 2 }
@@ -23,14 +24,16 @@ export default function Songs() {
   const [tab, setTab] = useState('songs')
   const [form, setForm] = useState(null)
   const [setlistOpen, setSetlistOpen] = useState(null)
+  const [wizard, setWizard] = useState(false)
   const add = () => (tab === 'songs' ? setForm({}) : setSetlistOpen({}))
   return (
     <div className="page">
       <PageHead title="Songs" sub="Repertoire & setlists" action={<AddButton label={tab === 'songs' ? 'Song' : 'Setlist'} onClick={add} />} />
       <div className="toolbar"><Segmented options={[['songs', 'Repertoire'], ['setlists', 'Setlists']]} value={tab} onChange={setTab} /></div>
-      {tab === 'songs' ? <Repertoire onEdit={setForm} /> : <Setlists onOpen={setSetlistOpen} />}
+      {tab === 'songs' ? <Repertoire onEdit={setForm} /> : <Setlists onOpen={setSetlistOpen} onWizard={() => setWizard(true)} />}
       <Fab label="Add" onClick={add} />
       {form && <SongForm initial={form} onClose={() => setForm(null)} />}
+      {wizard && <SetlistWizard onClose={() => setWizard(false)} />}
       {setlistOpen && <SetlistEditor initial={setlistOpen} onClose={() => setSetlistOpen(null)} />}
     </div>
   )
@@ -125,7 +128,7 @@ function SongRehearsals({ songId }) {
 
 function SongForm({ initial, onClose }) {
   const [f, setF] = useState({
-    title: '', key: '', bpm: '', status: 'progress', notes: '', ...initial,
+    title: '', key: '', bpm: '', status: 'progress', notes: '', energy: null, ...initial,
     duration: initial.duration ? fmtDuration(initial.duration) : '',
     links: (initial.links || []).join('\n'),
   })
@@ -134,7 +137,7 @@ function SongForm({ initial, onClose }) {
     e.preventDefault()
     const data = {
       title: f.title.trim(), key: f.key, bpm: f.bpm ? Number(f.bpm) : null, status: f.status,
-      duration: parseDuration(f.duration), notes: f.notes.trim(),
+      duration: parseDuration(f.duration), notes: f.notes.trim(), energy: f.energy ? Number(f.energy) : null,
       links: f.links.split(/\s+/).map((x) => x.trim()).filter(isUrl),
     }
     if (f.id) await updateItem('songs', f.id, data); else await addItem('songs', data)
@@ -155,6 +158,9 @@ function SongForm({ initial, onClose }) {
           <Field label="Duration"><input value={f.duration} onChange={set('duration')} placeholder="3:45" inputMode="decimal" /></Field>
         </div>
         <Field label="Status"><Segmented options={STATUS_OPTIONS} value={f.status} onChange={set('status')} /></Field>
+        <Field label="Energy (optional)" hint="Used to pick the opener and shape the setlist. Empty = guessed from BPM.">
+          <Segmented small options={[['', 'Auto'], ['1', '1 calm'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5 high']]} value={f.energy ? String(f.energy) : ''} onChange={(v) => setF({ ...f, energy: v || null })} />
+        </Field>
         <Field label="Notes"><textarea rows={3} value={f.notes} onChange={set('notes')} placeholder="Structure, who starts, capo…" /></Field>
         <Field label="Links" hint="YouTube, tabs, etc. One per line."><textarea rows={3} value={f.links} onChange={set('links')} placeholder="https://youtube.com/…" /></Field>
         <button className="btn primary block">{f.id ? 'Save changes' : 'Add song'}</button>
@@ -163,17 +169,26 @@ function SongForm({ initial, onClose }) {
   )
 }
 
-function Setlists({ onOpen }) {
+function Setlists({ onOpen, onWizard }) {
   const { rows: setlists, loading, error } = useCollection('setlists')
   const { rows: songs } = useCollection('songs')
   const { rows: events } = useCollection('events')
   if (loading) return <Loading />
-  if (!setlists.length) return <Empty icon="list" action={<AddButton label="Setlist" onClick={() => onOpen({})} />}>No setlists yet. Build one from your repertoire.</Empty>
+  const makeCard = (
+    <button className="card make-setlist" onClick={onWizard}>
+      <span className="make-icon"><Icon name="list" size={22} /></span>
+      <span className="grow"><strong>Make a setlist</strong>
+        <span className="muted small">Pick songs, rank your top 3 and get the best order: high-energy opener, smooth keys and tempos, best song last.</span></span>
+      <Icon name="chevR" size={18} />
+    </button>
+  )
+  if (!setlists.length) return <>{makeCard}<Empty icon="list" action={<AddButton label="Empty setlist" onClick={() => onOpen({})} />}>No setlists yet.</Empty></>
   const evDate = (s) => events.find((e) => e.id === s.eventId)?.date || ''
   const sorted = [...setlists].sort((a, b) => evDate(b).localeCompare(evDate(a)) || (b.createdAt - a.createdAt))
   return (
     <>
       <ErrorNote error={error} />
+      {makeCard}
       <div className="grid-cards">
         {sorted.map((s) => {
           const items = (s.songIds || []).map((id) => songs.find((x) => x.id === id)).filter(Boolean)

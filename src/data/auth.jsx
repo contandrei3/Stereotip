@@ -1,31 +1,29 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import {
-  onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
-} from 'firebase/auth'
+import { onAuthStateChanged, signInAnonymously } from 'firebase/auth'
 import { auth, isFirebaseConfigured } from './firebase'
-import { getItem, setItem } from './store'
 import { MEMBERS } from '../config'
 
+// No passwords: each device silently gets an anonymous Firebase session
+// (so the database only talks to this app), and the member just taps
+// their name once. The choice is remembered on that device.
 const Ctx = createContext(null)
-const DEMO_KEY = 'stereotip:demo-member'
+const KEY = 'stereotip:member'
+const saved = () => {
+  const id = localStorage.getItem(KEY)
+  return MEMBERS.some((m) => m.id === id) ? id : null
+}
 
 export function AuthProvider({ children }) {
-  const [state, setState] = useState({ ready: false, user: null, memberId: null })
+  const [state, setState] = useState({ ready: false, error: null, memberId: saved() })
 
   useEffect(() => {
-    if (!isFirebaseConfigured) {
-      const id = localStorage.getItem(DEMO_KEY)
-      setState({ ready: true, user: id ? { demo: true } : null, memberId: id })
-      return
-    }
-    return onAuthStateChanged(auth, async (user) => {
-      if (!user) return setState({ ready: true, user: null, memberId: null })
-      const email = (user.email || '').toLowerCase()
-      let memberId = MEMBERS.find((m) => m.email && m.email.toLowerCase() === email)?.id ?? null
-      if (!memberId) {
-        try { memberId = (await getItem('users', user.uid))?.memberId ?? null } catch (e) { console.error(e) }
-      }
-      setState({ ready: true, user, memberId })
+    if (!isFirebaseConfigured) { setState((s) => ({ ...s, ready: true })); return }
+    return onAuthStateChanged(auth, (user) => {
+      if (user) return setState((s) => ({ ...s, ready: true, error: null }))
+      signInAnonymously(auth).catch((error) => {
+        console.error(error)
+        setState((s) => ({ ...s, ready: true, error }))
+      })
     })
   }, [])
 
@@ -33,24 +31,13 @@ export function AuthProvider({ children }) {
     ...state,
     me: MEMBERS.find((m) => m.id === state.memberId) ?? null,
     demo: !isFirebaseConfigured,
-    login: (email, password) => signInWithEmailAndPassword(auth, email.trim(), password),
-    resetPassword: (email) => sendPasswordResetEmail(auth, email.trim()),
-    async chooseMember(id) {
-      if (!isFirebaseConfigured) {
-        localStorage.setItem(DEMO_KEY, id)
-        setState({ ready: true, user: { demo: true }, memberId: id })
-        return
-      }
-      await setItem('users', state.user.uid, { memberId: id, email: state.user.email ?? '' })
+    chooseMember(id) {
+      localStorage.setItem(KEY, id)
       setState((s) => ({ ...s, memberId: id }))
     },
-    async logout() {
-      if (!isFirebaseConfigured) {
-        localStorage.removeItem(DEMO_KEY)
-        setState({ ready: true, user: null, memberId: null })
-        return
-      }
-      await signOut(auth)
+    switchMember() {
+      localStorage.removeItem(KEY)
+      setState((s) => ({ ...s, memberId: null }))
     },
   }
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

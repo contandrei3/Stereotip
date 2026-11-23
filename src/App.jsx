@@ -24,15 +24,15 @@ const NAV = [
 const MOBILE_MAIN = ['/', '/calendar', '/songs', '/journal']
 
 export default function App() {
-  const { ready, user, memberId } = useAuth()
+  const { ready, error, memberId } = useAuth()
   if (!ready) return <div className="center-screen"><Loading /></div>
-  if (!user) return <Login />
+  if (error) return <ConnectError error={error} />
   if (!memberId) return <MemberPicker />
   return <Shell />
 }
 
 function Shell() {
-  const { me, logout, demo } = useAuth()
+  const { me, switchMember, demo } = useAuth()
   const [moreOpen, setMoreOpen] = useState(false)
   const loc = useLocation()
   const inMore = !MOBILE_MAIN.includes(loc.pathname)
@@ -50,7 +50,7 @@ function Shell() {
           {demo && <span className="tag warn" title="Firebase isn't configured yet. Data is only saved in this browser.">Demo</span>}
           <Avatar id={me.id} size={30} />
           <span className="me-name">{me.name}</span>
-          <button className="icon-btn" onClick={logout} title="Sign out" aria-label="Sign out"><Icon name="logout" size={18} /></button>
+          <button className="icon-btn" onClick={switchMember} title="Switch member" aria-label="Switch member"><Icon name="logout" size={18} /></button>
         </div>
       </header>
 
@@ -85,7 +85,7 @@ function Shell() {
                 <Icon name={n.icon} size={22} /><span>{n.label}</span>
               </NavLink>
             ))}
-            <button onClick={logout}><Icon name="logout" size={22} /><span>Sign out ({me.name})</span></button>
+            <button onClick={switchMember}><Icon name="logout" size={22} /><span>Not {me.name}? Switch member</span></button>
           </div>
         </div>
       )}
@@ -93,55 +93,31 @@ function Shell() {
   )
 }
 
-function Login() {
-  const { demo, login, resetPassword, chooseMember } = useAuth()
-  const [email, setEmail] = useState('')
-  const [pw, setPw] = useState('')
-  const [err, setErr] = useState('')
-  const [info, setInfo] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  if (demo) return <MemberPicker onPick={chooseMember} demoIntro />
-
-  const submit = async (e) => {
-    e.preventDefault(); setErr(''); setBusy(true)
-    try { await login(email, pw) } catch (e) {
-      setErr(e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password'
-        ? 'Wrong e-mail or password.' : e.message)
-    } finally { setBusy(false) }
-  }
-  const reset = async () => {
-    setErr(''); setInfo('')
-    if (!email) return setErr('Type your e-mail first, then tap "Forgot password".')
-    try { await resetPassword(email); setInfo('Password reset e-mail sent.') } catch (e) { setErr(e.message) }
-  }
+function ConnectError({ error }) {
   return (
     <div className="auth-screen">
-      <form className="auth-card" onSubmit={submit}>
-        <Logo size={150} />
-        <h1>{BAND_NAME} <span className="muted">Band Hub</span></h1>
-        <p className="muted">Members only. Sign in with your band account.</p>
-        <input type="email" autoComplete="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" autoComplete="current-password" placeholder="Password" value={pw} onChange={(e) => setPw(e.target.value)} required />
-        {err && <p className="error-text">{err}</p>}
-        {info && <p className="ok-text">{info}</p>}
-        <button className="btn primary block" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
-        <button type="button" className="btn ghost block" onClick={reset}>Forgot password</button>
-      </form>
+      <div className="auth-card">
+        <Logo size={120} />
+        <h1>Can't connect</h1>
+        <p className="muted">{error.code === 'auth/admin-restricted-operation' || error.code === 'auth/operation-not-allowed'
+          ? 'Anonymous sign-in is not enabled in Firebase (Authentication → Sign-in method → Anonymous).'
+          : `Check your internet connection and try again. (${error.code || error.message})`}</p>
+        <button className="btn primary block" onClick={() => window.location.reload()}>Try again</button>
+      </div>
     </div>
   )
 }
 
-function MemberPicker({ demoIntro }) {
-  const { chooseMember, logout, demo } = useAuth()
+function MemberPicker() {
+  const { chooseMember, demo } = useAuth()
   return (
     <div className="auth-screen">
       <div className="auth-card">
         <Logo size={150} />
         <h1>Who are you?</h1>
-        {demoIntro
-          ? <p className="muted">Demo mode: Firebase isn't connected yet, so data stays in this browser only.</p>
-          : <p className="muted">Pick your name once. We'll remember it for this account.</p>}
+        <p className="muted">{demo
+          ? "Demo mode: Firebase isn't connected yet, so data stays in this browser only."
+          : 'Tap your name. This device will remember it.'}</p>
         <div className="member-grid">
           {MEMBERS.map((m) => (
             <button key={m.id} className="member-pick" onClick={() => chooseMember(m.id)}>
@@ -151,7 +127,6 @@ function MemberPicker({ demoIntro }) {
             </button>
           ))}
         </div>
-        {!demo && <button className="btn ghost block" onClick={logout}>Sign out</button>}
       </div>
     </div>
   )

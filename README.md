@@ -14,21 +14,17 @@ npm install
 npm run dev
 ```
 
-Without Firebase config the app runs in **demo mode**: you pick a member and data is saved
-only in that browser. That's useful for trying it out.
+Without Firebase config the app runs in **demo mode**: data is saved only in that browser. That's useful for trying it out.
 
 ## Connect Firebase (shared data)
 
 1. Create a project at <https://console.firebase.google.com> (the free Spark plan is enough).
 2. **Build → Firestore Database → Create database** (production mode, region `eur3` / Europe).
-3. **Build → Authentication → Get started → Email/Password → Enable.**
-   - Under **Users**, add one account per member (e-mail + password).
-   - Under **Settings → User actions**, untick *Enable create (sign-up)* so nobody else can register.
-4. **Project settings → Your apps → Web app (`</>`)**, then copy the config values into
+3. **Build → Authentication → Get started → Sign-in method → Anonymous → Enable.**
+   There are no passwords: each member just taps their name, and the device remembers it.
+4. **Project settings → General → Your apps → Web app (`</>`)**, then copy the config values into
    `.env.local` (see `.env.example`).
-5. Optional: put each member's e-mail in `src/config.js` so they're recognised automatically.
-   Otherwise everyone picks their name once after the first login.
-6. Deploy the security rules and the site:
+5. Deploy the security rules and the site:
 
 ```bash
 npm i -g firebase-tools

@@ -1,25 +1,12 @@
 rules_version = '2';
 
-// Only signed-in band members can read or write anything.
-// Accounts are created by hand in Firebase console → Authentication → Users,
-// and public sign-up should be disabled there (Settings → User actions).
-//
-// Extra lock (recommended): list the five member e-mails below and replace
-// `isMember()` with `isBand()` in the match block.
+// The app signs every device in anonymously (no passwords) and members pick
+// their name. These rules make sure only sessions created by the app can
+// read or write band data; random requests to the database are rejected.
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isMember() {
-      return request.auth != null;
-    }
-    function isBand() {
-      return request.auth != null && request.auth.token.email in [
-        // 'andrei@example.com', 'mario@example.com', 'mihai@example.com',
-        // 'david@example.com', 'andreeas@example.com'
-      ];
-    }
-
     match /{collection}/{id} {
-      allow read, write: if isMember();
+      allow read, write: if request.auth != null;
     }
   }
 }

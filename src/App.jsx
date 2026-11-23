@@ -10,16 +10,18 @@ import Songs from './pages/Songs'
 import Tasks from './pages/Tasks'
 import Reminders from './pages/Reminders'
 import Journal from './pages/Journal'
+import Polls from './pages/Polls'
 
 const NAV = [
   { to: '/', label: 'Home', icon: 'home', end: true },
   { to: '/calendar', label: 'Calendar', icon: 'calendar' },
   { to: '/songs', label: 'Songs', icon: 'music' },
+  { to: '/polls', label: 'Polls', icon: 'poll' },
   { to: '/tasks', label: 'Tasks', icon: 'tasks' },
   { to: '/reminders', label: 'Reminders', icon: 'bell' },
   { to: '/journal', label: 'Journal', icon: 'journal' },
 ]
-const MOBILE_MAIN = ['/', '/calendar', '/songs', '/journal']
+const MOBILE_MAIN = ['/', '/calendar', '/songs', '/polls', '/journal']
 
 export default function App() {
   const { ready, error, memberId } = useAuth()
@@ -60,6 +62,7 @@ function Shell() {
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/reminders" element={<Reminders />} />
           <Route path="/journal" element={<Journal />} />
+          <Route path="/polls" element={<Polls />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>

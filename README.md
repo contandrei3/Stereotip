@@ -4,7 +4,7 @@ Private, members-only web app for **Stereo.tip** (Andrei, Mario, Mihai, David, A
 It has a dark theme, works well on phones, and all data is shared live through Firebase.
 
 **Sections:** Home summary · Calendar (rehearsals & gigs + availability) · Songs & setlists
-(drag & drop, auto total time) · Tasks · Reminders · Journal (posts, photos, comments, filter by song).
+(drag & drop, auto total time) · Polls (gig, rehearsal, song, other) · Tasks · Reminders · Journal (posts, photos, comments, filter by song).
 
 ## Run locally
 

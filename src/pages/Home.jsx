@@ -10,6 +10,7 @@ import { TaskRow, TaskForm } from './Tasks'
 import { ReminderRow, remindersFor } from './Reminders'
 import { Post } from './Journal'
 import { AbsenceRow, overlaps } from '../components/absences'
+import { PollCard, isOpen } from './Polls'
 
 function greeting() {
   const h = new Date().getHours()
@@ -23,6 +24,7 @@ export default function Home() {
   const { rows: tasks } = useCollection('tasks')
   const { rows: posts } = useCollection('posts')
   const { rows: absences } = useCollection('absences')
+  const { rows: polls } = useCollection('polls')
   const [open, setOpen] = useState(null)
   const [taskForm, setTaskForm] = useState(null)
 
@@ -40,6 +42,8 @@ export default function Home() {
   const otherOpen = openTasks.length - myTasks.length
   const weekAway = absences.filter((a) => overlaps(a, t, in7)).sort((a, b) => a.from.localeCompare(b.from))
   const latestPosts = [...posts].sort((a, b) => b.createdAt - a.createdAt).slice(0, 3)
+  const openPolls = polls.filter(isOpen).sort((a, b) => b.createdAt - a.createdAt)
+  const pollsToVote = openPolls.filter((p) => !(p.votes?.[memberId]?.length))
   const needsAnswer = upcoming.filter((e) => !e.availability?.[memberId]).length
 
   return (
@@ -47,7 +51,9 @@ export default function Home() {
       <div className="hello">
         <h1>{greeting()}, {me.name}.</h1>
         <p className="muted">
-          {needsAnswer > 0 ? <><strong className="accent">{needsAnswer}</strong> event{needsAnswer > 1 ? 's' : ''} waiting for your answer. </> : 'You\'re all set. '}
+          {needsAnswer > 0 && <><strong className="accent">{needsAnswer}</strong> event{needsAnswer > 1 ? 's' : ''} waiting for your answer. </>}
+          {pollsToVote.length > 0 && <Link to="/polls" className="muted"><strong className="accent">{pollsToVote.length}</strong> poll{pollsToVote.length > 1 ? 's' : ''} waiting for your vote.</Link>}
+          {needsAnswer === 0 && pollsToVote.length === 0 && "You're all set."}
         </p>
       </div>
       <ErrorNote error={error} />
@@ -87,6 +93,13 @@ export default function Home() {
               )}
             </div>
           </section>
+
+          {openPolls.length > 0 && (
+            <section>
+              <div className="section-head"><h2>Open polls{pollsToVote.length > 0 && <span className="count hot">{pollsToVote.length} need your vote</span>}</h2><Link to="/polls" className="see-all">Polls <Icon name="chevR" size={14} /></Link></div>
+              <div className="stack">{(pollsToVote.length ? pollsToVote : openPolls).slice(0, 2).map((p) => <PollCard key={p.id} poll={p} compact />)}</div>
+            </section>
+          )}
 
           <section>
             <div className="section-head"><h2>My open tasks</h2><Link to="/tasks" className="see-all">All tasks <Icon name="chevR" size={14} /></Link></div>

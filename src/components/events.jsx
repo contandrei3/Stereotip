@@ -7,6 +7,7 @@ import { fmtDate, relDays, today, fmtDuration } from '../lib/dates'
 import { Modal, Field, Avatar, Segmented, confirmDelete } from './ui'
 import Icon from './Icon'
 import { awayOn, AwayNote, fmtRange } from './absences'
+import { RehearsalSongs, RehearsalObservations, planList } from './rehearsalPlan'
 
 export const TYPE_LABEL = { rehearsal: 'Rehearsal', gig: 'Gig' }
 // A member's status for an event: their own answer wins; otherwise "away" if they marked an away period.
@@ -70,6 +71,7 @@ export function EventCard({ event, onOpen, compact }) {
         </div>
         <h3>{eventTitle(event)}</h3>
         {event.location && <p className="muted small line"><Icon name="pin" size={14} /> {event.location}</p>}
+        {event.type === 'rehearsal' && planList(event).length > 0 && <p className="muted small line"><Icon name="music" size={14} /> {planList(event).length} song{planList(event).length > 1 ? 's' : ''} to work on</p>}
         {!compact && <AvailabilitySummary event={event} />}
         {!compact && event.date >= today() && <MyAvailability event={event} />}
         {compact && <p className="muted small">{yes}/{MEMBERS.length} confirmed · {relDays(event.date)}</p>}
@@ -148,6 +150,13 @@ export function EventDetail({ event: ev, onClose }) {
             )
           })}
         </ul>
+
+        {event.type === 'rehearsal' && <>
+          <h4>Songs to work on</h4>
+          <RehearsalSongs event={event} />
+          <h4>Observations</h4>
+          <RehearsalObservations event={event} />
+        </>}
 
         {linked.length > 0 && <>
           <h4>Setlist</h4>

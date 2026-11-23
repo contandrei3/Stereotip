@@ -4,7 +4,7 @@ import { addItem, updateItem, removeItem } from '../data/store'
 import { useAuth } from '../data/auth'
 import { PageHead, AddButton, Empty, Segmented, Modal, Field, Avatar, Loading, ErrorNote, Fab, confirmDelete } from '../components/ui'
 import Icon from '../components/Icon'
-import { MEMBERS, memberName } from '../config'
+import { MEMBERS, memberName, SONG_STATUS as STATUS } from '../config'
 import { fmtDate, timeAgo, today, byDate, relDays } from '../lib/dates'
 import { awayMembersOn } from '../components/absences'
 import { eventTitle } from '../components/events'
@@ -42,7 +42,7 @@ function OptionLabel({ poll, o, songs, absences }) {
     return (
       <span className="opt-label">
         <Icon name="music" size={14} /> <strong>{s?.title ?? 'Deleted song'}</strong>
-        {s && <span className="muted small"> {s.key}{s.status === 'ready' ? ' · ready' : ' · in progress'}</span>}
+        {s && <span className="muted small"> {s.key}{' · ' + (STATUS[s.status] || '').toLowerCase()}</span>}
       </span>
     )
   }

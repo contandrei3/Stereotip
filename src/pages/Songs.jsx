@@ -12,11 +12,12 @@ import {
   PageHead, AddButton, Empty, Segmented, Modal, Field, Loading, ErrorNote, Fab, confirmDelete, isUrl, linkLabel,
 } from '../components/ui'
 import Icon from '../components/Icon'
-import { SONG_KEYS } from '../config'
+import { SONG_KEYS, SONG_STATUS, SONG_STATUS_OPTIONS } from '../config'
 import { fmtDuration, parseDuration, fmtDate, today, byDate } from '../lib/dates'
 import { eventTitle, TYPE_LABEL } from '../components/events'
 
-const STATUS = { progress: 'In progress', ready: 'Ready' }
+const STATUS = SONG_STATUS, STATUS_OPTIONS = SONG_STATUS_OPTIONS
+const STATUS_RANK = { ready: 0, progress: 1, future: 2 }
 
 export default function Songs() {
   const [tab, setTab] = useState('songs')
@@ -45,13 +46,13 @@ function Repertoire({ onEdit }) {
     .filter((s) => status === 'all' || s.status === status)
     .filter((s) => s.title?.toLowerCase().includes(q.toLowerCase()))
     .sort((a, b) => a.title.localeCompare(b.title))
-  const ready = songs.filter((s) => s.status === 'ready').length
+  const n = (st) => songs.filter((s) => s.status === st).length
   return (
     <>
       <ErrorNote error={error} />
       <div className="toolbar">
         <input className="search" placeholder="Search songs…" value={q} onChange={(e) => setQ(e.target.value)} />
-        <Segmented small options={[['all', `All ${songs.length}`], ['ready', `Ready ${ready}`], ['progress', `In progress ${songs.length - ready}`]]} value={status} onChange={setStatus} />
+        <Segmented small options={[['all', `All ${songs.length}`], ...STATUS_OPTIONS.map(([k, l]) => [k, `${l} ${n(k)}`])]} value={status} onChange={setStatus} />
       </div>
       {list.length === 0
         ? <Empty icon="music" action={!songs.length && <AddButton label="Song" onClick={() => onEdit({})} />}>{songs.length ? 'No songs match.' : 'No songs yet. Add your repertoire.'}</Empty>
@@ -71,6 +72,7 @@ function Repertoire({ onEdit }) {
                 <div className="song-detail">
                   <p><span className={`tag ${s.status}`}>{STATUS[s.status]}</span></p>
                   {s.notes && <p className="notes">{s.notes}</p>}
+                  <SongRehearsals songId={s.id} />
                   {(s.links || []).length > 0 && (
                     <div className="links">
                       {s.links.map((l, i) => (
@@ -90,6 +92,21 @@ function Repertoire({ onEdit }) {
           ))}
         </div>}
     </>
+  )
+}
+
+function SongRehearsals({ songId }) {
+  const { rows: events } = useCollection('events')
+  const list = events.filter((e) => Object.values(e.plan || {}).some((p) => p.songId === songId)).sort(byDate)
+  if (!list.length) return null
+  const next = list.find((e) => e.date >= today())
+  const past = list.filter((e) => e.date < today()).reverse()
+  return (
+    <p className="muted small line">
+      <Icon name="calendar" size={14} />
+      {next && <span>Next rehearsal: <strong className="accent">{fmtDate(next.date)}</strong>{past.length ? ' · ' : ''}</span>}
+      {past.length > 0 && <span>Rehearsed {past.length}× (last {fmtDate(past[0].date)})</span>}
+    </p>
   )
 }
 
@@ -124,7 +141,7 @@ function SongForm({ initial, onClose }) {
           <Field label="BPM"><input type="number" inputMode="numeric" min="20" max="300" value={f.bpm ?? ''} onChange={set('bpm')} /></Field>
           <Field label="Duration"><input value={f.duration} onChange={set('duration')} placeholder="3:45" inputMode="decimal" /></Field>
         </div>
-        <Field label="Status"><Segmented options={[['progress', 'In progress'], ['ready', 'Ready']]} value={f.status} onChange={set('status')} /></Field>
+        <Field label="Status"><Segmented options={STATUS_OPTIONS} value={f.status} onChange={set('status')} /></Field>
         <Field label="Notes"><textarea rows={3} value={f.notes} onChange={set('notes')} placeholder="Structure, who starts, capo…" /></Field>
         <Field label="Links" hint="YouTube, tabs, etc. One per line."><textarea rows={3} value={f.links} onChange={set('links')} placeholder="https://youtube.com/…" /></Field>
         <button className="btn primary block">{f.id ? 'Save changes' : 'Add song'}</button>
@@ -192,7 +209,7 @@ function SetlistEditor({ initial, onClose }) {
   )
   const items = ids.map((id) => songs.find((s) => s.id === id)).filter(Boolean)
   const total = items.reduce((t, s) => t + (s.duration || 0), 0)
-  const available = songs.filter((s) => !ids.includes(s.id)).sort((a, b) => (a.status === b.status ? a.title.localeCompare(b.title) : a.status === 'ready' ? -1 : 1))
+  const available = songs.filter((s) => !ids.includes(s.id)).sort((a, b) => ((STATUS_RANK[a.status] ?? 1) - (STATUS_RANK[b.status] ?? 1) || a.title.localeCompare(b.title)))
   const gigs = events.filter((e) => e.date >= today() || e.id === eventId).sort(byDate)
 
   const onDragEnd = ({ active, over }) => {

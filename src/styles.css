@@ -309,6 +309,8 @@ details.past .stack, details.past .task-list { opacity: .75; }
 @media (max-width: 420px) { .song-meta .kbd:nth-child(2) { display: none; } }
 .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--warn); }
 .status-dot.ready { background: var(--yes); }
+.status-dot.future { background: transparent; border: 2px solid var(--faint); }
+.tag.future { background: var(--surface-3); color: var(--muted); }
 .song-detail { padding: 0 14px 14px; border-top: 1px solid var(--border); padding-top: 12px; }
 .links { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
 .link-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--surface-3); border: 0; color: var(--text); text-decoration: none; font-size: 13px; font-weight: 600; }
@@ -463,3 +465,18 @@ details.past .stack, details.past .task-list { opacity: .75; }
 .check input { width: 18px; height: 18px; min-height: 0; accent-color: var(--accent); }
 .count.hot { background: var(--accent); color: var(--accent-ink); margin-left: 8px; font-family: var(--font); font-weight: 700; }
 .tabbar a, .tabbar button { font-size: 10.5px; }
+
+/* ── Rehearsal plan & observations ── */
+.rplan { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.rplan > * { align-self: stretch; } .rplan > .btn { align-self: flex-start; }
+.rplan-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rplan-list li { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 6px 8px 12px; }
+.rplan-row { display: flex; align-items: center; gap: 10px; }
+.rplan-note { margin: 6px 4px 2px 20px; font-size: 14px; color: var(--text); border-left: 2px solid var(--border-strong); padding-left: 10px; white-space: pre-wrap; cursor: pointer; }
+.rplan-note-form { display: flex; gap: 6px; margin: 8px 4px 2px 20px; }
+.rplan-note-form input { min-height: 38px; padding: 7px 10px; }
+.obs { display: flex; flex-direction: column; gap: 10px; }
+.obs-song { color: var(--text); }
+.obs-form { display: flex; flex-direction: column; gap: 6px; }
+.obs-form-row { display: flex; gap: 6px; }
+.obs-form-row select { min-height: 38px; padding: 6px 10px; }

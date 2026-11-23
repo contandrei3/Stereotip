@@ -15,3 +15,6 @@ export const memberName = (id) => memberById(id)?.name ?? 'Unknown'
 export const SONG_KEYS = [
   'C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B',
 ].flatMap((k) => [k, k + 'm'])
+
+export const SONG_STATUS = { ready: 'Ready', progress: 'In progress', future: 'In the future' }
+export const SONG_STATUS_OPTIONS = [['ready', 'Ready'], ['progress', 'In progress'], ['future', 'In the future']]

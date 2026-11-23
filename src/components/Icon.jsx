@@ -25,6 +25,7 @@ const P = {
   user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
   away: 'M3 21h18M5 21V8l7-5 7 5v13M10 21v-5h4v5M4 4l16 16',
   poll: 'M5 20V11M12 20V5M19 20v-6M3 20h18',
+  dot: 'M12 12h.01',
   arrowR: 'M5 12h14M13 6l6 6-6 6',
 }
 export default function Icon({ name, size = 20, className = '', stroke = 2 }) {

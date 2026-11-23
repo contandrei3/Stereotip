@@ -11,6 +11,7 @@ import Tasks from './pages/Tasks'
 import Reminders from './pages/Reminders'
 import Journal from './pages/Journal'
 import Polls from './pages/Polls'
+import { NotificationBell } from './components/Notifications'
 
 const NAV = [
   { to: '/', label: 'Home', icon: 'home', end: true },
@@ -48,6 +49,7 @@ function Shell() {
         </nav>
         <div className="me">
           {demo && <span className="tag warn" title="Firebase isn't configured yet. Data is only saved in this browser.">Demo</span>}
+          <NotificationBell />
           <Avatar id={me.id} size={30} />
           <span className="me-name">{me.name}</span>
           <button className="icon-btn" onClick={switchMember} title="Switch member" aria-label="Switch member"><Icon name="logout" size={18} /></button>

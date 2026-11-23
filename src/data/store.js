@@ -119,7 +119,11 @@ export function watch(c, filter, fn) {
   }
 }
 
-export const addItem = (c, data) => backend.add(c, { ...data, createdAt: Date.now() })
+// The member using this device; stamped on everything they create ("by"),
+// so notifications can show who did what and skip your own actions.
+let currentMember = null
+export const setCurrentMember = (id) => { currentMember = id }
+export const addItem = (c, data) => backend.add(c, { by: currentMember, ...data, createdAt: Date.now() })
 export const updateItem = (c, id, patch) => backend.update(c, id, { ...patch, updatedAt: Date.now() })
 export const removeItem = (c, id) => backend.remove(c, id)
 export const getItem = (c, id) => backend.getDoc(c, id)

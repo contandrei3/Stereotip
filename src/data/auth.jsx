@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { onAuthStateChanged, signInAnonymously } from 'firebase/auth'
 import { auth, isFirebaseConfigured } from './firebase'
 import { MEMBERS } from '../config'
+import { setCurrentMember } from './store'
 
 // No passwords: each device silently gets an anonymous Firebase session
 // (so the database only talks to this app), and the member just taps
@@ -15,6 +16,7 @@ const saved = () => {
 
 export function AuthProvider({ children }) {
   const [state, setState] = useState({ ready: false, error: null, memberId: saved() })
+  setCurrentMember(state.memberId)
 
   useEffect(() => {
     if (!isFirebaseConfigured) { setState((s) => ({ ...s, ready: true })); return }

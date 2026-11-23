@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MEMBERS } from '../config'
 import { addItem, updateItem, removeItem } from '../data/store'
 import { useAuth } from '../data/auth'
@@ -112,6 +113,7 @@ export function EventForm({ initial, onClose }) {
 }
 
 export function EventDetail({ event: ev, onClose }) {
+  const navigate = useNavigate()
   const [editing, setEditing] = useState(false)
   const { rows: setlists } = useCollection('setlists')
   const { rows: songs } = useCollection('songs')
@@ -167,6 +169,7 @@ export function EventDetail({ event: ev, onClose }) {
               <div key={s.id} className="mini-setlist">
                 <strong>{s.name}</strong> <span className="muted small">{items.length} songs · {fmtDuration(total, true)}</span>
                 <ol>{items.map((x) => <li key={x.id}>{x.title}</li>)}</ol>
+                {items.length > 0 && <button className="btn small stage-open" onClick={() => navigate(`/stage/${s.id}`)}><Icon name="stage" size={16} /> Stage mode</button>}
               </div>
             )
           })}

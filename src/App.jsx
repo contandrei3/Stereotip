@@ -12,6 +12,7 @@ import Reminders from './pages/Reminders'
 import Journal from './pages/Journal'
 import Polls from './pages/Polls'
 import { NotificationBell } from './components/Notifications'
+import Stage from './pages/Stage'
 
 const NAV = [
   { to: '/', label: 'Home', icon: 'home', end: true },
@@ -29,7 +30,10 @@ export default function App() {
   if (!ready) return <div className="center-screen"><Loading /></div>
   if (error) return <ConnectError error={error} />
   if (!memberId) return <MemberPicker />
-  return <Shell />
+  return <Routes>
+    <Route path="/stage/:id" element={<Stage />} />
+    <Route path="*" element={<Shell />} />
+  </Routes>
 }
 
 function Shell() {

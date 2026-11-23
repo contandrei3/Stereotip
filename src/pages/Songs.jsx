@@ -16,12 +16,15 @@ import { SONG_KEYS, SONG_STATUS, SONG_STATUS_OPTIONS } from '../config'
 import { fmtDuration, parseDuration, fmtDate, today, byDate } from '../lib/dates'
 import { eventTitle, TYPE_LABEL } from '../components/events'
 import SetlistWizard from './SetlistWizard'
+import { useNavigate } from 'react-router-dom'
 
 const STATUS = SONG_STATUS, STATUS_OPTIONS = SONG_STATUS_OPTIONS
 const STATUS_RANK = { ready: 0, progress: 1, future: 2 }
 
 export default function Songs() {
-  const [tab, setTab] = useState('songs')
+  // remembered for this browser tab, so coming back from stage mode lands on Setlists again
+  const [tab, setTabState] = useState(() => { try { return sessionStorage.getItem('stereotip:songsTab') || 'songs' } catch { return 'songs' } })
+  const setTab = (t) => { setTabState(t); try { sessionStorage.setItem('stereotip:songsTab', t) } catch { /* ignore */ } }
   const [form, setForm] = useState(null)
   const [setlistOpen, setSetlistOpen] = useState(null)
   const [wizard, setWizard] = useState(false)
@@ -170,6 +173,7 @@ function SongForm({ initial, onClose }) {
 }
 
 function Setlists({ onOpen, onWizard }) {
+  const navigate = useNavigate()
   const { rows: setlists, loading, error } = useCollection('setlists')
   const { rows: songs } = useCollection('songs')
   const { rows: events } = useCollection('events')
@@ -201,6 +205,11 @@ function Setlists({ onOpen, onWizard }) {
                 : <p className="muted small">Not linked to a gig</p>}
               <p className="setlist-stats"><strong>{items.length}</strong> songs · <strong>{fmtDuration(total, true)}</strong></p>
               <ol className="setlist-preview">{items.slice(0, 5).map((x) => <li key={x.id}>{x.title}</li>)}{items.length > 5 && <li className="muted">+{items.length - 5} more</li>}</ol>
+              {items.length > 0 && (
+                <button className="btn small stage-open" onClick={(e) => { e.stopPropagation(); navigate(`/stage/${s.id}`) }}>
+                  <Icon name="stage" size={16} /> Stage mode
+                </button>
+              )}
             </article>
           )
         })}
@@ -224,6 +233,7 @@ function SortableSong({ id, index, song, onRemove }) {
 }
 
 function SetlistEditor({ initial, onClose }) {
+  const navigate = useNavigate()
   const { rows: songs } = useCollection('songs')
   const { rows: events } = useCollection('events')
   const [name, setName] = useState(initial.name || '')
@@ -253,7 +263,8 @@ function SetlistEditor({ initial, onClose }) {
   return (
     <Modal title={initial.id ? 'Edit setlist' : 'New setlist'} onClose={onClose}
       footer={<>
-        {initial.id && <button className="btn ghost danger" onClick={del}><Icon name="trash" size={16} /> Delete</button>}
+        {initial.id && <button className="btn ghost danger" onClick={del}><Icon name="trash" size={16} /></button>}
+        {initial.id && ids.length > 0 && <button className="btn" onClick={async () => { await save(); navigate(`/stage/${initial.id}`) }}><Icon name="stage" size={16} /> Stage</button>}
         <button className="btn primary" onClick={save}>Save setlist</button>
       </>}>
       <div className="form">

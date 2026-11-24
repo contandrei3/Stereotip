@@ -12,7 +12,7 @@ import {
   PageHead, AddButton, Empty, Segmented, Modal, Field, Loading, ErrorNote, Fab, confirmDelete, isUrl, linkLabel,
 } from '../components/ui'
 import Icon from '../components/Icon'
-import { SONG_KEYS, SONG_STATUS, SONG_STATUS_OPTIONS } from '../config'
+import { SONG_KEYS, SONG_STATUS, SONG_STATUS_OPTIONS, memberName } from '../config'
 import { fmtDuration, parseDuration, fmtDate, today, byDate } from '../lib/dates'
 import { eventTitle, TYPE_LABEL } from '../components/events'
 import SetlistWizard from './SetlistWizard'
@@ -116,16 +116,30 @@ function SongItem({ s, open, onToggle, onEdit }) {
 
 function SongRehearsals({ songId }) {
   const { rows: events } = useCollection('events')
+  const { rows: observations } = useCollection('observations')
+  const notes = observations.filter((o) => o.songId === songId).sort((a, b) => b.createdAt - a.createdAt).slice(0, 3)
   const list = events.filter((e) => Object.values(e.plan || {}).some((p) => p.songId === songId)).sort(byDate)
-  if (!list.length) return null
+  const notesBlock = notes.length > 0 && (
+    <div className="song-obs">
+      <span className="field-label">Latest rehearsal notes</span>
+      {notes.map((o) => {
+        const ev = events.find((e) => e.id === o.eventId)
+        return <p key={o.id}><b>{memberName(o.author)}</b>{ev ? <span className="muted small"> · {fmtDate(ev.date)}</span> : null}: {o.text}</p>
+      })}
+    </div>
+  )
+  if (!list.length) return notesBlock || null
   const next = list.find((e) => e.date >= today())
   const past = list.filter((e) => e.date < today()).reverse()
   return (
+    <>
     <p className="muted small line">
       <Icon name="calendar" size={14} />
       {next && <span>Next rehearsal: <strong className="accent">{fmtDate(next.date)}</strong>{past.length ? ' · ' : ''}</span>}
       {past.length > 0 && <span>Rehearsed {past.length}× (last {fmtDate(past[0].date)})</span>}
     </p>
+    {notesBlock}
+    </>
   )
 }
 

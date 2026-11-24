@@ -609,3 +609,28 @@ details.past .stack, details.past .task-list { opacity: .75; }
   .stage-bottom { flex-direction: row; align-items: center; flex-wrap: wrap; }
   .stage-next { flex: 1; } .stage-nav { flex: 1; } .stage-time { width: 100%; }
 }
+
+/* ── Rehearsal songs & observations: prominent ── */
+.rsec { background: var(--surface-2); border: 1px solid var(--border-strong); border-left: 4px solid var(--accent); border-radius: var(--radius); padding: 12px 12px 14px; margin: 14px 0; }
+.rsec-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.rsec-head h3 { font-size: 18px; }
+.rsec-head .count { margin-left: auto; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 13px; padding: 2px 10px; }
+.rsec-empty { color: var(--muted); font-size: 14px; }
+.rsec .rplan-list li { background: var(--surface); padding: 10px 6px 10px 12px; }
+.rsec .rplan-row strong { font-size: 16.5px; }
+.rsec .rplan-note { color: var(--text); font-size: 15px; border-left-color: var(--warn); background: rgba(255,182,72,.07); padding: 6px 10px; border-radius: 0 6px 6px 0; }
+.rsec .bubble { background: var(--surface); }
+.rsec .ctext { font-size: 15px; }
+.rsec .pick-list { background: var(--surface); }
+.rsum { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 2px; }
+.rsum-songs { display: flex; flex-wrap: wrap; gap: 6px; }
+.song-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: var(--surface-3); border: 1px solid var(--border-strong); font-size: 13.5px; font-weight: 600; color: var(--text); max-width: 100%; }
+.song-chip .status-dot { width: 8px; height: 8px; }
+.song-chip.noted::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); margin-left: 2px; }
+.rsum-obs { display: flex; align-items: flex-start; gap: 6px; font-size: 13.5px; padding: 8px 10px; background: var(--surface-2); border-radius: var(--radius-sm); border-left: 3px solid var(--accent); }
+.rsum-obs .icon { margin-top: 2px; }
+.rsum-obs b { font-weight: 700; }
+.rsum-empty { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--warn); margin-top: 4px; }
+
+.song-obs { margin: 10px 0; padding: 10px 12px; background: var(--surface-2); border-left: 3px solid var(--warn); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.obs-form .check { color: var(--muted); }

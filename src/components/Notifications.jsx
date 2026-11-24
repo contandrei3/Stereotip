@@ -18,7 +18,7 @@ function useActivity() {
   const { memberId } = useAuth()
   const c = (n) => useCollection(n).rows // eslint-disable-line react-hooks/rules-of-hooks
   const events = c('events'), polls = c('polls'), tasks = c('tasks'), reminders = c('reminders')
-  const posts = c('posts'), comments = c('comments'), absences = c('absences'), songs = c('songs'), setlists = c('setlists')
+  const posts = c('posts'), comments = c('comments'), observations = c('observations'), absences = c('absences'), songs = c('songs'), setlists = c('setlists')
   const [now, setNow] = useState(Date.now())
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(t) }, [])
 
@@ -56,6 +56,13 @@ function useActivity() {
         text: <>commented{post?.author === memberId ? ' on your post' : ''}: “{clip(cm.text)}”</>,
       })
     })
+    observations.filter(fresh).forEach((o) => {
+      const ev = events.find((e) => e.id === o.eventId), song = songs.find((x) => x.id === o.songId)
+      push(o, {
+        key: 'ob' + o.id, icon: 'comment', to: '/calendar',
+        text: <>noted{ev ? ` (rehearsal ${fmtDate(ev.date)})` : ''}{song ? <> on <b>{song.title}</b></> : ''}: “{clip(o.text)}”</>,
+      })
+    })
     absences.filter(fresh).forEach((a) => push(a, {
       key: 'ab' + a.id, icon: 'away', to: '/calendar',
       text: a.member === who(a) ? <>is away <b>{fmtRange(a)}</b>{a.reason ? ` (${a.reason})` : ''}</>
@@ -65,7 +72,7 @@ function useActivity() {
     setlists.filter(fresh).forEach((s) => push(s, { key: 'sl' + s.id, icon: 'list', to: '/songs', text: <>made a setlist: <b>{s.name}</b></> }))
 
     return out.sort((a, b) => b.at - a.at).slice(0, 60)
-  }, [events, polls, tasks, reminders, posts, comments, absences, songs, setlists, memberId, now])
+  }, [events, polls, tasks, reminders, posts, comments, observations, absences, songs, setlists, memberId, now])
 }
 
 function useSeen() {

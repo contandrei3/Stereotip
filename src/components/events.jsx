@@ -8,7 +8,7 @@ import { fmtDate, relDays, today, fmtDuration } from '../lib/dates'
 import { Modal, Field, Avatar, Segmented, confirmDelete } from './ui'
 import Icon from './Icon'
 import { awayOn, AwayNote, fmtRange } from './absences'
-import { RehearsalSongs, RehearsalObservations, planList } from './rehearsalPlan'
+import { RehearsalSongs, RehearsalObservations, RehearsalSummary, planList } from './rehearsalPlan'
 
 export const TYPE_LABEL = { rehearsal: 'Rehearsal', gig: 'Gig' }
 // A member's status for an event: their own answer wins; otherwise "away" if they marked an away period.
@@ -72,7 +72,7 @@ export function EventCard({ event, onOpen, compact }) {
         </div>
         <h3>{eventTitle(event)}</h3>
         {event.location && <p className="muted small line"><Icon name="pin" size={14} /> {event.location}</p>}
-        {event.type === 'rehearsal' && planList(event).length > 0 && <p className="muted small line"><Icon name="music" size={14} /> {planList(event).length} song{planList(event).length > 1 ? 's' : ''} to work on</p>}
+        {event.type === 'rehearsal' && <RehearsalSummary event={event} compact={compact} />}
         {!compact && <AvailabilitySummary event={event} />}
         {!compact && event.date >= today() && <MyAvailability event={event} />}
         {compact && <p className="muted small">{yes}/{MEMBERS.length} confirmed · {relDays(event.date)}</p>}
@@ -119,6 +119,7 @@ export function EventDetail({ event: ev, onClose }) {
   const { rows: songs } = useCollection('songs')
   const { rows: events } = useCollection('events')
   const { rows: absences } = useCollection('absences')
+  const { rows: observations } = useCollection('observations')
   const event = events.find((e) => e.id === ev.id) ?? ev
   if (editing) return <EventForm initial={event} onClose={() => setEditing(false)} />
   const linked = setlists.filter((s) => s.eventId === event.id)
@@ -136,6 +137,17 @@ export function EventDetail({ event: ev, onClose }) {
         {event.location && <p className="line"><Icon name="pin" size={16} /> {event.location}</p>}
         {event.notes && <p className="notes">{event.notes}</p>}
 
+        {event.type === 'rehearsal' && <>
+          <section className="rsec">
+            <div className="rsec-head"><Icon name="music" size={18} /><h3>Songs to work on</h3><span className="count">{planList(event).length}</span></div>
+            <RehearsalSongs event={event} />
+          </section>
+          <section className="rsec">
+            <div className="rsec-head"><Icon name="comment" size={18} /><h3>Observations</h3><span className="count">{observations.filter((o) => o.eventId === event.id).length}</span></div>
+            <RehearsalObservations event={event} />
+          </section>
+        </>}
+
         <h4>Who's coming</h4>
         <MyAvailability event={event} />
         <ul className="avail-list">
@@ -152,13 +164,6 @@ export function EventDetail({ event: ev, onClose }) {
             )
           })}
         </ul>
-
-        {event.type === 'rehearsal' && <>
-          <h4>Songs to work on</h4>
-          <RehearsalSongs event={event} />
-          <h4>Observations</h4>
-          <RehearsalObservations event={event} />
-        </>}
 
         {linked.length > 0 && <>
           <h4>Setlist</h4>

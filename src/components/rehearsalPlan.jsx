@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useCollection } from '../data/hooks'
-import { addItem, updateItem } from '../data/store'
+import { addItem, updateItem, removeItem } from '../data/store'
 import { useAuth } from '../data/auth'
 import { memberName, SONG_STATUS } from '../config'
-import { timeAgo, fmtDuration } from '../lib/dates'
-import { Avatar } from './ui'
+import { timeAgo, fmtDuration, today } from '../lib/dates'
+import { Avatar, confirmDelete } from './ui'
+import { Link } from 'react-router-dom'
 import Icon from './Icon'
 
 const RANK = { progress: 0, ready: 1, future: 2 }
@@ -33,7 +34,7 @@ export function RehearsalSongs({ event }) {
 
   return (
     <div className="rplan">
-      {plan.length === 0 ? <p className="muted small">No songs assigned yet. What are we working on?</p> : (
+      {plan.length === 0 ? <p className="rsec-empty">No songs yet. What are we working on?</p> : (
         <>
           <ol className="rplan-list">
             {plan.map((p) => {
@@ -60,8 +61,8 @@ export function RehearsalSongs({ event }) {
           <p className="muted small">{plan.length} song{plan.length > 1 ? 's' : ''}{total ? ` · ${fmtDuration(total, true)} of music` : ''}</p>
         </>
       )}
-      <button className="btn small ghost" onClick={() => setPicking(!picking)}>
-        <Icon name={picking ? 'x' : 'plus'} size={14} /> {picking ? 'Done' : 'Assign songs'}
+      <button className={`btn small ${picking ? '' : 'primary'}`} onClick={() => setPicking(!picking)}>
+        <Icon name={picking ? 'check' : 'plus'} size={14} /> {picking ? 'Done' : 'Assign songs'}
       </button>
       {picking && (available.length === 0
         ? <p className="muted small">All songs are already assigned (or the repertoire is empty).</p>
@@ -77,36 +78,42 @@ export function RehearsalSongs({ event }) {
   )
 }
 
-/** Observations for a rehearsal = journal posts linked to it. */
+/** Observations for a rehearsal: stored on their own (collection "observations"),
+ *  not in the Journal, unless the author ticks "Also post in Journal". */
 export function RehearsalObservations({ event }) {
   const { memberId } = useAuth()
+  const { rows: all } = useCollection('observations')
   const { rows: posts } = useCollection('posts')
   const { rows: songs } = useCollection('songs')
   const [text, setText] = useState('')
   const [songId, setSongId] = useState('')
-  const list = posts.filter((p) => p.eventId === event.id).sort((a, b) => a.createdAt - b.createdAt)
+  const [toJournal, setToJournal] = useState(false)
+  const list = all.filter((o) => o.eventId === event.id).sort((a, b) => a.createdAt - b.createdAt)
+  const journalPosts = posts.filter((p) => p.eventId === event.id).length
   const planSongs = planList(event).map((p) => songs.find((s) => s.id === p.songId)).filter(Boolean)
   const others = songs.filter((s) => !planSongs.includes(s)).sort((a, b) => a.title.localeCompare(b.title))
   const send = async (e) => {
     e.preventDefault()
     if (!text.trim()) return
-    await addItem('posts', { text: text.trim(), author: memberId, eventId: event.id, songId: songId || null, photoCount: 0 })
-    setText(''); setSongId('')
+    const data = { text: text.trim(), author: memberId, eventId: event.id, songId: songId || null }
+    await addItem('observations', data)
+    if (toJournal) await addItem('posts', { ...data, photoCount: 0 })
+    setText(''); setSongId(''); setToJournal(false)
   }
   return (
     <div className="obs">
-      {list.length === 0 && <p className="muted small">No observations yet. Notes added here also show up in the Journal.</p>}
-      {list.map((p) => {
-        const s = songs.find((x) => x.id === p.songId)
+      {list.length === 0 && <p className="rsec-empty">No observations yet. They stay here, in the rehearsal.</p>}
+      {list.map((o) => {
+        const s = songs.find((x) => x.id === o.songId)
         return (
-          <div key={p.id} className="comment">
-            <Avatar id={p.author} size={26} />
+          <div key={o.id} className="comment">
+            <Avatar id={o.author} size={26} />
             <div className="bubble">
-              <div className="small"><strong>{memberName(p.author)}</strong> <span className="muted">{timeAgo(p.createdAt)}</span>
-                {s && <span className="obs-song"> · <Icon name="music" size={12} /> {s.title}</span>}
-                {p.photoCount > 0 && <span className="muted"> · {p.photoCount} photo{p.photoCount > 1 ? 's' : ''}</span>}</div>
-              <div className="ctext">{p.text}</div>
+              <div className="small"><strong>{memberName(o.author)}</strong> <span className="muted">{timeAgo(o.createdAt)}</span>
+                {s && <span className="obs-song"> · <Icon name="music" size={12} /> {s.title}</span>}</div>
+              <div className="ctext">{o.text}</div>
             </div>
+            {o.author === memberId && <button className="icon-btn tiny" aria-label="Delete observation" onClick={() => confirmDelete('this observation') && removeItem('observations', o.id)}><Icon name="x" size={14} /></button>}
           </div>
         )
       })}
@@ -120,7 +127,42 @@ export function RehearsalObservations({ event }) {
           </select>
           <button className="btn small primary" disabled={!text.trim()}>Add</button>
         </div>
+        <label className="check small"><input type="checkbox" checked={toJournal} onChange={(e) => setToJournal(e.target.checked)} /> Also post in Journal (for important things)</label>
       </form>
+      {journalPosts > 0 && <p className="muted small"><Icon name="journal" size={13} /> {journalPosts} Journal post{journalPosts > 1 ? 's' : ''} about this rehearsal · <Link to="/journal">open Journal</Link></p>}
+    </div>
+  )
+}
+
+/** Compact preview on rehearsal cards: song chips + observations. */
+export function RehearsalSummary({ event, compact }) {
+  const { rows: songs } = useCollection('songs')
+  const { rows: observations } = useCollection('observations')
+  const plan = planList(event).map((p) => ({ ...p, song: songs.find((s) => s.id === p.songId) })).filter((p) => p.song)
+  const obs = observations.filter((o) => o.eventId === event.id).sort((a, b) => b.createdAt - a.createdAt)
+  if (!plan.length && !obs.length) {
+    if (compact || event.date < today()) return null
+    return <p className="rsum-empty"><Icon name="music" size={14} /> No songs planned yet · tap to add</p>
+  }
+  const latest = obs[0]
+  return (
+    <div className="rsum">
+      {plan.length > 0 && (
+        <div className="rsum-songs" aria-label="Songs to work on">
+          {plan.map((p) => (
+            <span key={p.id} className={`song-chip ${p.note ? 'noted' : ''}`} title={p.note || p.song.title}>
+              <span className={`status-dot ${p.song.status}`} />{p.song.title}
+            </span>
+          ))}
+        </div>
+      )}
+      {latest && (
+        <p className="rsum-obs">
+          <Icon name="comment" size={14} />
+          <span className="grow"><b>{obs.length} observation{obs.length > 1 ? 's' : ''}</b>
+            <span className="muted"> · {memberName(latest.author)}: “{latest.text.length > 60 ? latest.text.slice(0, 59) + '…' : latest.text}”</span></span>
+        </p>
+      )}
     </div>
   )
 }

@@ -8,10 +8,10 @@ import { fmtDate, dateTime, timeAgo } from '../lib/dates'
 import { fmtRange } from './absences'
 import { Modal, Avatar } from './ui'
 import Icon from './Icon'
+import PushSettings from './PushSettings'
 
 const WINDOW = 14 * 86400000 // show the last two weeks
 const clip = (t = '', n = 70) => (t.length > n ? t.slice(0, n - 1) + '…' : t)
-const POPUP_KEY = 'stereotip:popups'
 
 /** Builds the activity feed for the current member from the shared data. */
 function useActivity() {
@@ -111,12 +111,6 @@ export function NotificationBell() {
     const latest = fresh[0]
     setToast(latest)
     const t = setTimeout(() => setToast(null), 6000)
-    try {
-      if (localStorage.getItem(POPUP_KEY) === '1' && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-        const el = document.createElement('div')
-        new Notification('Stereo.tip', { body: `${latest.by ? memberName(latest.by) + ' ' : ''}${textOf(latest, el)}`, icon: './icon-192.png', tag: latest.key })
-      }
-    } catch { /* ignore */ }
     return () => clearTimeout(t)
   }, [items, loading]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -138,6 +132,7 @@ export function NotificationBell() {
       )}
       {open && (
         <Modal title="Notifications" onClose={close}>
+          <PushSettings />
           {items.length === 0 ? <p className="muted">Nothing new from the band in the last two weeks.</p> : (
             <ul className="notif-list">
               {items.map((i) => {
@@ -157,44 +152,8 @@ export function NotificationBell() {
               })}
             </ul>
           )}
-          <PopupSetting />
         </Modal>
       )}
     </>
-  )
-}
-
-function textOf(item, el) {
-  // Plain-text version of a JSX snippet for system notifications.
-  const parts = []
-  const walk = (n) => {
-    if (n == null || n === false) return
-    if (typeof n === 'string' || typeof n === 'number') return parts.push(String(n))
-    if (Array.isArray(n)) return n.forEach(walk)
-    if (n.props) walk(n.props.children)
-  }
-  walk(item.text)
-  return parts.join('')
-}
-
-function PopupSetting() {
-  const supported = typeof window !== 'undefined' && 'Notification' in window
-  const [on, setOn] = useState(() => { try { return localStorage.getItem(POPUP_KEY) === '1' } catch { return false } })
-  if (!supported) return null
-  const toggle = async (e) => {
-    const want = e.target.checked
-    if (want && Notification.permission !== 'granted') {
-      const res = await Notification.requestPermission()
-      if (res !== 'granted') return setOn(false)
-    }
-    try { localStorage.setItem(POPUP_KEY, want ? '1' : '0') } catch { /* ignore */ }
-    setOn(want)
-  }
-  return (
-    <label className="check notif-setting">
-      <input type="checkbox" checked={on} onChange={toggle} />
-      <span>Also show system pop-ups when the site is open in another tab or in the background
-        <span className="muted small"> (on this device only)</span></span>
-    </label>
   )
 }

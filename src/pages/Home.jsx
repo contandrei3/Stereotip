@@ -11,6 +11,7 @@ import { ReminderRow, remindersFor } from './Reminders'
 import { Post } from './Journal'
 import { AbsenceRow, overlaps } from '../components/absences'
 import { PollCard, isOpen } from './Polls'
+import PushSettings from '../components/PushSettings'
 
 function greeting() {
   const h = new Date().getHours()
@@ -57,6 +58,7 @@ export default function Home() {
         </p>
       </div>
       <ErrorNote error={error} />
+      <PushSettings compact />
       {loading ? <Loading /> : (
         <div className="home-grid">
           <section className="home-next">

@@ -4,9 +4,11 @@ import { HashRouter } from 'react-router-dom'
 import App from './App'
 import { AuthProvider } from './data/auth'
 import { applyLogoTheme } from './lib/theme'
+import { registerServiceWorker } from './lib/push'
 import './styles.css'
 
 applyLogoTheme()
+registerServiceWorker()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

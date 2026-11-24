@@ -3,6 +3,7 @@ import { onAuthStateChanged, signInAnonymously } from 'firebase/auth'
 import { auth, isFirebaseConfigured } from './firebase'
 import { MEMBERS } from '../config'
 import { setCurrentMember } from './store'
+import { syncPushMember } from '../lib/push'
 
 // No passwords: each device silently gets an anonymous Firebase session
 // (so the database only talks to this app), and the member just taps
@@ -35,6 +36,7 @@ export function AuthProvider({ children }) {
     demo: !isFirebaseConfigured,
     chooseMember(id) {
       localStorage.setItem(KEY, id)
+      syncPushMember(id).catch(() => {})
       setState((s) => ({ ...s, memberId: id }))
     },
     switchMember() {

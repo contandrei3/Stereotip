@@ -1,12 +1,16 @@
 rules_version = '2';
 
 // The app signs every device in anonymously (no passwords) and members pick
-// their name. These rules make sure only sessions created by the app can
-// read or write band data; random requests to the database are rejected.
+// their name. Only sessions created by the app can read or write band data.
 service cloud.firestore {
   match /databases/{database}/documents {
     match /{collection}/{id} {
-      allow read, write: if request.auth != null;
+      allow read, write: if request.auth != null && collection != 'pushSubs';
+    }
+    // Phone notification subscriptions: devices can register/unregister themselves,
+    // but nobody can list them (only the server reads them).
+    match /pushSubs/{id} {
+      allow create, update, delete: if request.auth != null;
     }
   }
 }

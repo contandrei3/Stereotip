@@ -123,8 +123,27 @@ export function watch(c, filter, fn) {
 // so notifications can show who did what and skip your own actions.
 let currentMember = null
 export const setCurrentMember = (id) => { currentMember = id }
-export const addItem = (c, data) => backend.add(c, { by: currentMember, ...data, createdAt: Date.now() })
-export const updateItem = (c, id, patch) => backend.update(c, id, { ...patch, updatedAt: Date.now() })
-export const removeItem = (c, id) => backend.remove(c, id)
+// Lets the notification code react to writes without a circular import.
+let writeListener = null
+export const setWriteListener = (fn) => { writeListener = fn }
+const emit = (...a) => { try { writeListener?.(...a) } catch (e) { console.warn(e) } }
+
+/** Rows of a collection already loaded in this tab (empty if nobody watches it). */
+export const peek = (c) => subs.get(c)?.rows ?? []
+
+export const addItem = async (c, data) => {
+  const full = { by: currentMember, ...data, createdAt: Date.now() }
+  const id = await backend.add(c, full)
+  emit('add', c, id, full)
+  return id
+}
+export const updateItem = async (c, id, patch) => {
+  await backend.update(c, id, { ...patch, updatedAt: Date.now() })
+  emit('update', c, id, patch)
+}
+export const removeItem = async (c, id) => {
+  await backend.remove(c, id)
+  emit('remove', c, id)
+}
 export const getItem = (c, id) => backend.getDoc(c, id)
 export const setItem = (c, id, data) => backend.setDoc(c, id, data)

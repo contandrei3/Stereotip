@@ -97,7 +97,7 @@ export function RehearsalObservations({ event }) {
     if (!text.trim()) return
     const data = { text: text.trim(), author: memberId, eventId: event.id, songId: songId || null }
     await addItem('observations', data)
-    if (toJournal) await addItem('posts', { ...data, photoCount: 0 })
+    if (toJournal) await addItem('posts', { ...data, photoCount: 0, fromObservation: true })
     setText(''); setSongId(''); setToJournal(false)
   }
   return (

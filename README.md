@@ -39,6 +39,22 @@ behave like an app.
 ### Notes
 - Photos are resized in the browser and stored in Firestore (no Cloud Storage or paid plan needed).
 
+## Phone notifications
+
+Push notifications are sent by a small free Cloudflare Worker in `worker/`
+(no Firebase paid plan needed). The app calls it when something new is added and
+schedules reminders / day-before event heads-ups; a cron every 5 minutes sends the due ones.
+Every request must carry a Firebase ID token from the app.
+
+```bash
+cd worker && npm install
+npm test                       # local end-to-end test (encryption, auth, schedule)
+CLOUDFLARE_API_TOKEN=… npx wrangler deploy
+```
+
+The VAPID private key is a Worker secret (`wrangler secret put VAPID_PRIVATE_KEY`), never in the repo.
+On iPhone, notifications only work after "Add to Home Screen" (iOS 16.4+).
+
 ## Logo & colours
 The band logo is `public/logo.png` (white, transparent background); the app icons (`favicon.png`, `apple-touch-icon.png`, `icon-*.png`) are generated from it. It's used in the header, login screen
 and as the icon. The theme is monochrome to match the white logo. If you ever use a coloured

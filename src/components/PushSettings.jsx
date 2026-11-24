@@ -61,7 +61,13 @@ export default function PushSettings({ compact, onDone }) {
         {status === 'off' && <button className="btn primary small" onClick={turnOn} disabled={busy}>{busy ? 'Turning on…' : 'Turn on notifications'}</button>}
         {compact && <button className="btn ghost small" onClick={hide}>Not now</button>}
         {status === 'on' && <>
-          <button className="btn small" onClick={() => testNotification()}>Send a test</button>
+          <button className="btn small" onClick={async () => {
+            setMsg('Sending…')
+            try {
+              const r = await testNotification(memberId)
+              setMsg(r?.sent ? 'Sent! It should pop up in a few seconds.' : 'The server found no device for you. Turn notifications off and on again.')
+            } catch (e) { setMsg(`Couldn't reach the notification server (${e.message}).`) }
+          }}>Send a test</button>
           <button className="btn ghost small" onClick={turnOff} disabled={busy}>Turn off</button>
         </>}
       </div>

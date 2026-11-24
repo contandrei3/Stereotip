@@ -1,0 +1,12 @@
+{
+  "name": "stereotip-push",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "test": "node test/run.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "4.157.0"
+  }
+}

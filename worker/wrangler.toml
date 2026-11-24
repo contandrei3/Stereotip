@@ -1,0 +1,22 @@
+# Stereo.tip push notification server (Cloudflare Workers, free plan).
+name = "stereotip-push"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+workers_dev = true
+
+[vars]
+FIREBASE_PROJECT_ID = "stereotip-59432"
+VAPID_PUBLIC_KEY = "BJi68RX4i09IM3jQt3DRXDpx_j2BAalU9dM3FzwfVCZsjJOHcrjJlWlhKe917BGdMhiEUNxxgdi2nJO3UhDlTDM"
+VAPID_SUBJECT = "https://stereotip-59432.web.app"
+ALLOWED_ORIGINS = "https://stereotip-59432.web.app,https://stereotip-59432.firebaseapp.com"
+
+# Phone subscriptions and scheduled notifications.
+[[kv_namespaces]]
+binding = "PUSH"
+id = "27d3d7629b554774abe540d88bb24039"
+
+# Due reminders and day-before event heads-ups.
+[triggers]
+crons = ["*/5 * * * *"]
+
+# Secret (not in this file): VAPID_PRIVATE_KEY — set with `wrangler secret put VAPID_PRIVATE_KEY`.
